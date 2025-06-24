@@ -27,3 +27,4 @@ client/.DS_Store
 build/
 coverage/
 *.egg-info/
+.env
