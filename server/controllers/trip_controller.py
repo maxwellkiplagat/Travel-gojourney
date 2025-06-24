@@ -64,13 +64,16 @@ def update_trip(id, req):
 @jwt_required()
 def delete_trip(id):
     user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
     trip = Trip.query.get_or_404(id)
-    if trip.user_id != user_id:
+    if not user.is_admin and trip.user_id != user_id:
         return jsonify({"error": "Unauthorized"}), 403
 
     db.session.delete(trip)
     db.session.commit()
     return jsonify({"message": "Trip deleted"}), 200
+
 
 def like_trip_public(trip_id):
     ip_address = request.remote_addr
