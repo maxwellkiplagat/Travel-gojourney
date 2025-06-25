@@ -10,15 +10,15 @@ from config import Config
 from dotenv import load_dotenv
 
 load_dotenv()
+
 app = Flask(__name__)
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 app.config.from_object(Config)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
-
 
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersecret")
 google_bp = make_google_blueprint(
@@ -29,11 +29,12 @@ google_bp = make_google_blueprint(
 )
 app.register_blueprint(google_bp, url_prefix="/login")
 
-from models import *
-from controllers.auth_controller import handle_signup, handle_login
+from models import *  
+from controllers.auth_controller import handle_signup, handle_login, check_session
 from controllers.trip_controller import (
     get_all_trips, get_my_trips, create_trip,
-    update_trip, delete_trip, like_trip_public
+    update_trip, delete_trip, like_trip_public,
+    get_all_users, delete_user
 )
 
 @app.route("/")
@@ -48,10 +49,15 @@ def signup():
 def login():
     return handle_login(request)
 
+@app.route("/auth/check-session", methods=["GET"])
+@jwt_required()
+def check():
+    return check_session()
+
 @app.route("/login/google/authorized")
 def google_login_callback():
     if not google.authorized:
-        return redirect("/login")  
+        return redirect("/login")
 
     resp = google.get("/oauth2/v2/userinfo")
     user_info = resp.json()
@@ -69,7 +75,15 @@ def google_login_callback():
         db.session.commit()
 
     access_token = create_access_token(identity=user.id)
-    return jsonify({"token": access_token, "user": user.username}), 200
+    return jsonify({
+        "token": access_token,
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "is_admin": user.is_admin
+        }
+    }), 200
 
 @app.route("/trips", methods=["GET"])
 def trips():
@@ -98,6 +112,16 @@ def my_posts():
 @app.route("/trips/<int:trip_id>/like", methods=["POST"])
 def like(trip_id):
     return like_trip_public(trip_id)
+
+@app.route("/admin/users", methods=["GET"])
+@jwt_required()
+def admin_users():
+    return get_all_users()
+
+@app.route("/admin/users/<int:id>", methods=["DELETE"])
+@jwt_required()
+def admin_delete_user(id):
+    return delete_user(id)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5555)

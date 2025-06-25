@@ -5,31 +5,33 @@ from models.trip import Trip, Like
 from models.user import User
 
 def get_all_trips():
-    trips = Trip.query.all()
+    trips = Trip.query.order_by(Trip.created_at.desc()).all()
     return jsonify([{
         "id": t.id,
         "title": t.title,
         "description": t.description,
         "location": t.location,
         "image_url": t.image_url,
-        "likes": len(t.likes),
-        "author": t.author.username
+        "created_at": t.created_at.isoformat(),
+        "like_count": len(t.likes),
+        "author_id": t.user_id,
+        "author_username": t.author.username,
+        "is_liked": any(like.ip_address == request.remote_addr for like in t.likes)
     } for t in trips]), 200
 
 @jwt_required()
 def get_my_trips():
     user_id = get_jwt_identity()
     trips = Trip.query.filter_by(user_id=user_id).all()
-    return jsonify([
-        {
-            "id": t.id,
-            "title": t.title,
-            "description": t.description,
-            "location": t.location,
-            "image_url": t.image_url,
-        }
-        for t in trips
-    ]), 200
+    return jsonify([{
+        "id": t.id,
+        "title": t.title,
+        "description": t.description,
+        "location": t.location,
+        "image_url": t.image_url,
+        "created_at": t.created_at.isoformat(),
+        "like_count": len(t.likes)
+    } for t in trips]), 200
 
 @jwt_required()
 def create_trip(req):
@@ -65,7 +67,6 @@ def update_trip(id, req):
 def delete_trip(id):
     user_id = get_jwt_identity()
     user = User.query.get(user_id)
-
     trip = Trip.query.get_or_404(id)
     if not user.is_admin and trip.user_id != user_id:
         return jsonify({"error": "Unauthorized"}), 403
@@ -74,17 +75,43 @@ def delete_trip(id):
     db.session.commit()
     return jsonify({"message": "Trip deleted"}), 200
 
-
 def like_trip_public(trip_id):
     ip_address = request.remote_addr
     trip = Trip.query.get_or_404(trip_id)
 
     existing = Like.query.filter_by(trip_id=trip.id, ip_address=ip_address).first()
     if existing:
-        return jsonify({"message": "You have already liked this trip."}), 400
+        return jsonify({"message": "Already liked"}), 400
 
     new_like = Like(trip_id=trip.id, ip_address=ip_address)
     db.session.add(new_like)
     db.session.commit()
 
     return jsonify({"message": "Trip liked!"}), 201
+
+@jwt_required()
+def get_all_users():
+    user_id = get_jwt_identity()
+    requester = User.query.get(user_id)
+    if not requester or not requester.is_admin:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    users = User.query.all()
+    return jsonify([{
+        "id": u.id,
+        "username": u.username,
+        "email": u.email,
+        "is_admin": u.is_admin
+    } for u in users]), 200
+
+@jwt_required()
+def delete_user(id):
+    requester_id = get_jwt_identity()
+    requester = User.query.get(requester_id)
+    if not requester or not requester.is_admin:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    user = User.query.get_or_404(id)
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({"message": "User deleted"}), 200
