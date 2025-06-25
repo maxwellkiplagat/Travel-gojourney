@@ -1,8 +1,8 @@
-trip_controller.py
 from flask import jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import db
 from models.trip import Trip, Like
+from models.user import User
 
 def get_all_trips():
     trips = Trip.query.all()
