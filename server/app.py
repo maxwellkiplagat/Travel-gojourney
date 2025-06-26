@@ -34,7 +34,8 @@ from controllers.auth_controller import handle_signup, handle_login, check_sessi
 from controllers.trip_controller import (
     get_all_trips, get_my_trips, create_trip,
     update_trip, delete_trip, like_trip_public,
-    get_all_users, delete_user
+    get_all_users, delete_user,get_trip,update_trip_by_id,get_all_trips_admin,
+    admin_delete_trip
 )
 
 @app.route("/")
@@ -122,6 +123,25 @@ def admin_users():
 @jwt_required()
 def admin_delete_user(id):
     return delete_user(id)
+
+@app.route("/trips/<int:id>", methods=["GET"])
+def trip_detail(id):
+    return get_trip(id)
+
+@app.route("/trips/<int:id>", methods=["PATCH"])
+@jwt_required()
+def trip_update(id):
+    return update_trip_by_id(id)
+
+@app.route("/admin/trips", methods=["GET"])
+@jwt_required()
+def admin_all_trips():
+    return get_all_trips_admin()
+
+@app.route("/admin/trips/<int:id>", methods=["DELETE"])
+@jwt_required()
+def admin_remove_trip(id):
+    return admin_delete_trip(id)
 
 if __name__ == "__main__":
     app.run(debug=True, port=5555)
