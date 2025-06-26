@@ -79,15 +79,17 @@ def like_trip_public(trip_id):
     ip_address = request.remote_addr
     trip = Trip.query.get_or_404(trip_id)
 
-    existing = Like.query.filter_by(trip_id=trip.id, ip_address=ip_address).first()
-    if existing:
-        return jsonify({"message": "Already liked"}), 400
+    existing_like = Like.query.filter_by(trip_id=trip.id, ip_address=ip_address).first()
+    if existing_like:
+        db.session.delete(existing_like)
+        db.session.commit()
+        return jsonify({"message": "Unliked", "liked": False, "like_count": len(trip.likes)}), 200
 
     new_like = Like(trip_id=trip.id, ip_address=ip_address)
     db.session.add(new_like)
     db.session.commit()
 
-    return jsonify({"message": "Trip liked!"}), 201
+    return jsonify({"message": "Liked", "liked": True, "like_count": len(trip.likes)}), 201
 
 @jwt_required()
 def get_all_users():
@@ -115,3 +117,106 @@ def delete_user(id):
     db.session.delete(user)
     db.session.commit()
     return jsonify({"message": "User deleted"}), 200
+
+def get_trip(id):
+    trip = Trip.query.get(id)
+    if not trip:
+        return jsonify({"error": "Trip not found"}), 404
+
+    return jsonify({
+        "id": trip.id,
+        "title": trip.title,
+        "location": trip.location,
+        "description": trip.description,
+        "image_url": trip.image_url,
+        "likes": len(trip.likes),
+        "author": {
+            "id": trip.author.id,
+            "username": trip.author.username
+        }
+    }), 200
+
+@jwt_required()
+def update_trip_by_id(id):
+    user_id = get_jwt_identity()
+    trip = Trip.query.get(id)
+
+    if not trip:
+        return jsonify({"error": "Trip not found"}), 404
+
+    if trip.user_id != user_id:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    data = request.get_json()
+    trip.title = data.get("title", trip.title)
+    trip.location = data.get("location", trip.location)
+    trip.description = data.get("description", trip.description)
+    trip.image_url = data.get("image_url", trip.image_url)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Trip updated successfully",
+        "trip": {
+            "id": trip.id,
+            "title": trip.title,
+            "location": trip.location,
+            "description": trip.description,
+            "image_url": trip.image_url
+        }
+    }), 200
+
+@jwt_required()
+def admin_delete_trip(id):
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
+    if not user or not user.is_admin:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    trip = Trip.query.get_or_404(id)
+    db.session.delete(trip)
+    db.session.commit()
+    return jsonify({"message": "Trip deleted by admin"}), 200
+
+@jwt_required()
+def get_all_trips_admin():
+    user_id = get_jwt_identity()
+    admin = User.query.get(user_id)
+
+    if not admin or not admin.is_admin:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    trips = Trip.query.order_by(Trip.created_at.desc()).all()
+    return jsonify([{
+        "id": t.id,
+        "title": t.title,
+        "location": t.location,
+        "description": t.description,
+        "image_url": t.image_url,
+        "created_at": t.created_at.isoformat(),
+        "author_id": t.user_id,
+        "author_username": t.author.username,
+        "likes": len(t.likes)
+    } for t in trips]), 200
+
+@jwt_required()
+def get_all_trips_admin():
+    user_id = get_jwt_identity()
+    admin = User.query.get(user_id)
+
+    if not admin or not admin.is_admin:
+        return jsonify({"error": "Unauthorized"}), 403
+
+    trips = Trip.query.order_by(Trip.created_at.desc()).all()
+    return jsonify([{
+        "id": t.id,
+        "title": t.title,
+        "location": t.location,
+        "description": t.description,
+        "image_url": t.image_url,
+        "created_at": t.created_at.isoformat(),
+        "author_id": t.user_id,
+        "author_username": t.author.username,
+        "likes": len(t.likes)
+    } for t in trips]), 200
