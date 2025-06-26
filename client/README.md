@@ -1,12 +1,83 @@
-# React + Vite
+# LinkUp Travel Platform
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+LinkUp is a fullstack travel experience sharing platform where users can:
+- Share their travel adventures
+- Discover hidden gems from around the world
+- Like posts and interact with the travel community
+- Securely sign up and log in
+- Admins can manage and moderate content
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
 
-## Expanding the ESLint configuration
+### Frontend (React + Vite + Tailwind)
+- React 19
+- React Router DOM 7
+- Axios
+- Tailwind CSS
+- Lucide React Icons
+- Formik + Yup (forms + validation)
+- JWT Decode (for auth)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Backend (Flask + PostgreSQL)
+- Flask
+- Flask-SQLAlchemy
+- Flask-Migrate
+- Flask-JWT-Extended
+- Marshmallow (for serialization)
+- PostgreSQL (via SQLAlchemy)
+
+---
+
+## Installation & Setup
+
+### Backend (Python 3.8+)
+```bash
+cd server
+pip install -r requirements.txt
+flask db upgrade
+flask run
+```
+
+### Frontend
+```bash
+cd client
+npm install
+npm run dev
+```
+
+---
+
+## Features
+- JWT-based auth (sign up, login, logout, session check)
+- Explore trips with like/unlike functionality
+- Admin dashboard to manage trips & users
+- Search trips by title or location
+- CRUD for trips
+
+---
+
+## Folder Structure
+
+```
+LinkUp/
+├── client/             # React Frontend
+│   ├── src/
+│   └── ...
+├── server/             # Flask Backend
+│   ├── models/
+│   ├── controllers/
+│   ├── routes/
+│   └── ...
+└── README.md
+```
+
+---
+
+## Admin Actions
+- View all trips
+- Delete vulgar/flagged content
+- View and delete user accounts
+
+---
