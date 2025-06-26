@@ -5,7 +5,7 @@ import * as Yup from 'yup'
 import { useAuth } from '../context/AuthContext'
 
 export default function Register() {
-  const { register } = useAuth() // ✅ use the correct function name
+  const { register } = useAuth() 
   const navigate = useNavigate()
 
   const schema = Yup.object({
