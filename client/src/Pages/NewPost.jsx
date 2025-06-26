@@ -38,6 +38,7 @@ const NewPost = () => {
             validationSchema={validationSchema} onSubmit={handleSubmit}>
             {({ isSubmitting, values }) => (
               <Form className="space-y-6">
+                {/* Title */}
                 <div>
                   <label className="flex items-center mb-1">
                     <FileText className="mr-2" /> Title
@@ -46,6 +47,7 @@ const NewPost = () => {
                   <ErrorMessage name="title" component="div" className="text-red-600 text-sm" />
                 </div>
 
+                {/* Location */}
                 <div>
                   <label className="flex items-center mb-1">
                     <MapPin className="mr-2" /> Location
@@ -54,6 +56,7 @@ const NewPost = () => {
                   <ErrorMessage name="location" component="div" className="text-red-600 text-sm" />
                 </div>
 
+                {/* Image URL */}
                 <div>
                   <label className="flex items-center mb-1">
                     <Image className="mr-2" /> Image URL (optional)
@@ -62,6 +65,7 @@ const NewPost = () => {
                   <ErrorMessage name="image_url" component="div" className="text-red-600 text-sm" />
                 </div>
 
+                {/* Description */}
                 <div>
                   <label className="flex items-center mb-1">
                     <FileText className="mr-2" /> Description
@@ -70,6 +74,7 @@ const NewPost = () => {
                   <ErrorMessage name="description" component="div" className="text-red-600 text-sm" />
                 </div>
 
+                {/* Submit */}
                 <div className="flex justify-end space-x-4">
                   <button type="button" onClick={() => navigate(-1)} className="border px-4 py-2 rounded">
                     Cancel
