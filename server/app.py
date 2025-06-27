@@ -33,7 +33,7 @@ from models import *
 from controllers.auth_controller import handle_signup, handle_login, check_session
 from controllers.trip_controller import (
     get_all_trips, get_my_trips, create_trip,
-    update_trip, delete_trip, like_trip_public,
+    update_trip, delete_trip, like_trip,
     get_all_users, delete_user,get_trip,update_trip_by_id,get_all_trips_admin,
     admin_delete_trip
 )
@@ -111,8 +111,9 @@ def my_posts():
     return get_my_trips()
 
 @app.route("/trips/<int:trip_id>/like", methods=["POST"])
+@jwt_required()
 def like(trip_id):
-    return like_trip_public(trip_id)
+    return like_trip(trip_id)
 
 @app.route("/admin/users", methods=["GET"])
 @jwt_required()

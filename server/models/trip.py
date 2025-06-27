@@ -20,7 +20,9 @@ class Like(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     trip_id = db.Column(db.Integer, db.ForeignKey('trips.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) 
-    ip_address = db.Column(db.String, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False) 
 
-    __table_args__ = (db.UniqueConstraint('trip_id', 'ip_address', name='unique_like_by_ip'),)
+    __table_args__ = (
+        db.UniqueConstraint('trip_id', 'user_id', name='unique_user_trip_like'),
+    )
+  

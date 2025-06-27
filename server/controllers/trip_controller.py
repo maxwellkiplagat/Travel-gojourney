@@ -5,7 +5,14 @@ from models.trip import Trip, Like
 from models.user import User
 
 def get_all_trips():
+    try:
+        verify_jwt_in_request(optional=True)
+        user_id = get_jwt_identity()
+    except Exception:
+        user_id = None
+
     trips = Trip.query.order_by(Trip.created_at.desc()).all()
+
     return jsonify([{
         "id": t.id,
         "title": t.title,
@@ -16,9 +23,8 @@ def get_all_trips():
         "like_count": len(t.likes),
         "author_id": t.user_id,
         "author_username": t.author.username,
-        "is_liked": any(like.ip_address == request.remote_addr for like in t.likes)
+        "is_liked": any(l.user_id == user_id for l in t.likes) if user_id else False
     } for t in trips]), 200
-
 @jwt_required()
 def get_my_trips():
     user_id = get_jwt_identity()
@@ -75,22 +81,29 @@ def delete_trip(id):
     db.session.commit()
     return jsonify({"message": "Trip deleted"}), 200
 
-def like_trip_public(trip_id):
-    ip_address = request.remote_addr
+@jwt_required()
+def like_trip(trip_id):
+    user_id = get_jwt_identity()
     trip = Trip.query.get_or_404(trip_id)
 
-    existing_like = Like.query.filter_by(trip_id=trip.id, ip_address=ip_address).first()
+    existing_like = Like.query.filter_by(trip_id=trip.id, user_id=user_id).first()
     if existing_like:
         db.session.delete(existing_like)
         db.session.commit()
-        return jsonify({"message": "Unliked", "liked": False, "like_count": len(trip.likes)}), 200
+        return jsonify({
+            "message": "Unliked",
+            "liked": False,
+            "like_count": len(trip.likes)
+        }), 200
 
-    new_like = Like(trip_id=trip.id, ip_address=ip_address)
+    new_like = Like(trip_id=trip.id, user_id=user_id)
     db.session.add(new_like)
     db.session.commit()
-
-    return jsonify({"message": "Liked", "liked": True, "like_count": len(trip.likes)}), 201
-
+    return jsonify({
+        "message": "Liked",
+        "liked": True,
+        "like_count": len(trip.likes)
+    }), 201
 @jwt_required()
 def get_all_users():
     user_id = get_jwt_identity()
