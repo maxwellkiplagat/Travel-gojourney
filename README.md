@@ -33,7 +33,7 @@ LinkUp is a fullstack travel experience sharing platform where users can:
 ## Installation & Setup
 - Clone the repo
 ```bash
-git clone https://github.com/carly-cracker/LinkUp.git
+git clone https://github.com/carly-cracker/GoJourney.git
 ```
 
 ### Backend (Python 3.8+)
