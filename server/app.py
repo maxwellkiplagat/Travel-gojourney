@@ -1,3 +1,5 @@
+from dotenv import load_dotenv
+load_dotenv()
 from flask import Flask, jsonify, request, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -7,9 +9,7 @@ from flask_cors import CORS
 from flask_dance.contrib.google import make_google_blueprint, google
 import os
 from config import Config
-from dotenv import load_dotenv
 
-load_dotenv()
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -20,7 +20,7 @@ migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "supersecret")
+app.secret_key = os.environ.get("SECRET_KEY", "supersecret")
 google_bp = make_google_blueprint(
     client_id=os.environ["GOOGLE_CLIENT_ID"],
     client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
