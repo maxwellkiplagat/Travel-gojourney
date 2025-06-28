@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: gojourney-backend
+    name: Travel-gojourney
     env: python
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn server.app:app"  # or "gunicorn app:app" depending on your structure
