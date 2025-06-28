@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import { useAuth } from '../context/AuthContext';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2, MapPin} from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -50,7 +50,23 @@ const Dashboard = () => {
                 className="w-full h-48 object-cover rounded"
               />
               <h2 className="text-xl font-bold mt-2">{trip.title}</h2>
-              <p className="text-gray-600">{trip.location}</p>
+              
+               {/* <div className="text-gray-600 text-sm mt-1 flex items-center gap-2">
+                    <MapPin size={14} /> {trip.location}
+                  </div> */}
+              
+              <div className="flex justify-between items-center text-sm mt-1">
+                <p className="text-gray-600 flex items-center gap-1">
+                  <MapPin size={14} />
+                  {trip.location}
+                </p>
+                {trip.flagged && (
+                  <span className="bg-red-100 text-red-600 text-xs font-semibold px-2 py-1 rounded-full">
+                    Flagged
+                  </span>
+                )}
+              </div>
+
               <p className="text-gray-700 mt-2">{trip.description}</p>
 
               <div className="flex justify-end items-center gap-3 mt-4">
