@@ -3,7 +3,7 @@ services:
     name: gojourney-backend
     env: python
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn server.app:app"
+    startCommand: "gunicorn server.app:app"  # or "gunicorn app:app" depending on your structure
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11
+        value: 3.11.9  # Use the latest patch version supported by Render
