@@ -3,5 +3,5 @@ services:
     name: Travel-gojourney
     env: python
     buildCommand: "pip install -r server/requirements.txt"
-    startCommand: "gunicorn server.app:app"  # or "gunicorn app:app"
+    startCommand: "gunicorn server/app:app"  # or "gunicorn app:app"
     pythonVersion: 3.11.9  # ✅ This is the correct way
