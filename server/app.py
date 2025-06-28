@@ -1,24 +1,29 @@
 from dotenv import load_dotenv
 load_dotenv()
+
+
 from flask import Flask, jsonify, request, redirect
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
 from flask_cors import CORS
 from flask_dance.contrib.google import make_google_blueprint, google
+from flask_jwt_extended import jwt_required, create_access_token
+
+from .extensions import db, migrate, bcrypt, jwt
+from .config import Config
+
 import os
-from config import Config
+SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+
+
 
 
 app = Flask(__name__)
 app.config.from_object(Config)
-CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
 
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-bcrypt = Bcrypt(app)
-jwt = JWTManager(app)
+CORS(app, supports_credentials=True, origins=["http://localhost:5173"])
+db.init_app(app)
+migrate.init_app(app, db)
+bcrypt.init_app(app)
+jwt.init_app(app)
 
 app.secret_key = os.environ.get("SECRET_KEY", "supersecret")
 google_bp = make_google_blueprint(
@@ -29,13 +34,13 @@ google_bp = make_google_blueprint(
 )
 app.register_blueprint(google_bp, url_prefix="/login")
 
-from models import *  
-from controllers.auth_controller import handle_signup, handle_login, check_session
-from controllers.trip_controller import (
+from .models import *  
+from .controllers.auth_controller import handle_signup, handle_login, check_session
+from .controllers.trip_controller import (
     get_all_trips, get_my_trips, create_trip,
     update_trip, delete_trip, like_trip,
     get_all_users, delete_user,get_trip,update_trip_by_id,get_all_trips_admin,
-    admin_delete_trip
+    admin_delete_trip,flag_trip, unflag_trip
 )
 
 @app.route("/")
@@ -89,6 +94,19 @@ def google_login_callback():
 @app.route("/trips", methods=["GET"])
 def trips():
     return get_all_trips()
+
+@app.route("/admin/trips/<int:id>/flag", methods=["PUT"])
+@jwt_required()
+def admin_flag_trip(id):
+    return flag_trip(id)
+
+@app.route("/admin/trips/<int:id>/unflag", methods=["PUT"])
+@jwt_required()
+def admin_unflag_trip(id):
+    from .controllers.trip_controller import unflag_trip
+    return unflag_trip(id)
+
+
 
 @app.route("/trips", methods=["POST"])
 @jwt_required()
