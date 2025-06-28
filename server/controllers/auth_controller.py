@@ -1,6 +1,6 @@
 from flask import jsonify, request
-from app import db
-from models.user import User
+from ..extensions import db
+from ..models.user import User
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 
 def handle_signup(req):
