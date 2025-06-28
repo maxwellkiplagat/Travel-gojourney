@@ -65,7 +65,7 @@ requests==2.32.2
 requests-oauthlib==2.0.0
 six==1.16.0
 soupsieve==2.7
-SQLAlchemy==2.0.30
+SQLAlchemy==2.0.21
 SQLAlchemy-serializer==1.4.1
 stack-data==0.6.3
 toml==0.10.2
