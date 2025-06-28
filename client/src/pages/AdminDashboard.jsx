@@ -40,18 +40,31 @@ const AdminDashboard = () => {
 
   const handleDelete = async (id, type) => {
     if (!window.confirm(`Delete this ${type}?`)) return;
-
     try {
       await axios.delete(`/admin/${type}/${id}`);
-      type === 'users'
-        ? setUsers((prev) => prev.filter((u) => u.id !== id))
-        : setTrips((prev) => prev.filter((t) => t.id !== id));
+      if (type === 'users') {
+        setUsers(prev => prev.filter(u => u.id !== id));
+      } else {
+        setTrips(prev => prev.filter(t => t.id !== id));
+      }
     } catch (err) {
-      console.error(`${type} delete failed:`, err);
+      console.error(`Failed to delete ${type}:`, err);
     }
   };
 
-  const formatDate = (date) =>
+  const handleFlagToggle = async (id, flagged) => {
+    try {
+      const endpoint = flagged ? `/admin/trips/${id}/unflag` : `/admin/trips/${id}/flag`;
+      await axios.put(endpoint);
+      setTrips(prev =>
+        prev.map(t => t.id === id ? { ...t, flagged: !flagged } : t)
+      );
+    } catch (err) {
+      console.error('Failed to toggle flag:', err);
+    }
+  };
+
+  const formatDate = date =>
     new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -98,7 +111,12 @@ const AdminDashboard = () => {
 
           <div className="p-6">
             {activeTab === 'trips' && (
-              <TripTable trips={trips} onDelete={(id) => handleDelete(id, 'trips')} formatDate={formatDate} />
+              <TripTable
+                trips={trips}
+                onDelete={(id) => handleDelete(id, 'trips')}
+                onFlagToggle={handleFlagToggle}
+                formatDate={formatDate}
+              />
             )}
 
             {activeTab === 'users' && (
@@ -112,7 +130,6 @@ const AdminDashboard = () => {
 };
 
 // Sub-components
-
 const TabButton = ({ label, count, active, onClick }) => (
   <button
     onClick={onClick}
@@ -140,7 +157,7 @@ const TableHeader = ({ label }) => (
   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{label}</th>
 );
 
-const TripTable = ({ trips, onDelete, formatDate }) => (
+const TripTable = ({ trips, onDelete, onFlagToggle, formatDate }) => (
   <div>
     <h3 className="text-lg font-medium text-gray-900 mb-4">Manage Trips</h3>
     <div className="overflow-x-auto">
@@ -152,6 +169,7 @@ const TripTable = ({ trips, onDelete, formatDate }) => (
             <TableHeader label="Author" />
             <TableHeader label="Likes" />
             <TableHeader label="Created" />
+            <TableHeader label="Status" />
             <TableHeader label="Actions" />
           </tr>
         </thead>
@@ -164,6 +182,19 @@ const TripTable = ({ trips, onDelete, formatDate }) => (
               <td className="px-6 py-4 text-sm text-gray-900">{trip.likes}</td>
               <td className="px-6 py-4 text-sm text-gray-500">{formatDate(trip.created_at)}</td>
               <td className="px-6 py-4">
+                <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                  trip.flagged ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+                }`}>
+                  {trip.flagged ? 'Flagged' : 'Active'}
+                </span>
+              </td>
+              <td className="px-6 py-4 flex items-center gap-3">
+                <button
+                  onClick={() => onFlagToggle(trip.id, trip.flagged)}
+                  className="text-yellow-600 hover:text-yellow-800 text-sm"
+                >
+                  {trip.flagged ? 'Unflag' : 'Flag'}
+                </button>
                 <button onClick={() => onDelete(trip.id)} className="text-red-600 hover:text-red-800">
                   <Trash size={18} />
                 </button>
@@ -172,7 +203,7 @@ const TripTable = ({ trips, onDelete, formatDate }) => (
           ))}
           {trips.length === 0 && (
             <tr>
-              <td colSpan="6" className="text-center py-4 text-gray-500">No trips found.</td>
+              <td colSpan="7" className="text-center py-4 text-gray-500">No trips found.</td>
             </tr>
           )}
         </tbody>
