@@ -7,8 +7,8 @@ from flask_cors import CORS
 from flask_dance.contrib.google import make_google_blueprint, google
 from flask_jwt_extended import jwt_required, create_access_token
 
-from server.extensions import db, migrate, bcrypt, jwt
-from server.config import Config
+from extensions import db, migrate, bcrypt, jwt
+from config import Config
 
 import os
 SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
@@ -34,9 +34,9 @@ google_bp = make_google_blueprint(
 )
 app.register_blueprint(google_bp, url_prefix="/login")
 
-from server.models import *  
-from server.controllers.auth_controller import handle_signup, handle_login, check_session
-from server.controllers.trip_controller import (
+from models import *  
+from controllers.auth_controller import handle_signup, handle_login, check_session
+from controllers.trip_controller import (
     get_all_trips, get_my_trips, create_trip,
     update_trip, delete_trip, like_trip,
     get_all_users, delete_user,get_trip,update_trip_by_id,get_all_trips_admin,
