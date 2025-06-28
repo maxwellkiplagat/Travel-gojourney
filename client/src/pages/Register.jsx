@@ -12,6 +12,9 @@ export default function Register() {
     username: Yup.string().min(3, 'Min 3 characters').required('Required'),
     email: Yup.string().email('Invalid email').required('Required'),
     password: Yup.string().min(6, 'Min 6 characters').required('Required'),
+    confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password'), null], 'Passwords must match')
+    .required('Confirm your password'),
   })
 
   return (
@@ -64,7 +67,15 @@ export default function Register() {
                 />
                 <ErrorMessage name="password" component="div" className="text-red-600 text-sm" />
               </div>
-
+              <div>
+                <Field
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Confirm Password"
+                  className="w-full px-3 py-2 border rounded"
+                />
+                <ErrorMessage name="confirmPassword" component="div" className="text-red-600 text-sm" />
+              </div>
               <button
                 type="submit"
                 disabled={isSubmitting}
